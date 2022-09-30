@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
-from kivymd.uix.list import ThreeLineAvatarIconListItem, IconLeftWidget
+from kivymd.uix.list import ThreeLineAvatarIconListItem, IconLeftWidget, ThreeLineListItem, IconRightWidget
 from kivy4 import *
 from kv import *
-
+import tkinter as tk
+from tkinter import filedialog
 
 action_to_icon = {
     'Open App': 'launch',
@@ -95,10 +96,9 @@ class App(Kivy4):
         self.current_task_config = None
 
     def on_start(self):
-        item = ThreeLineAvatarIconListItem(text="Here you can create and edit tasks",
-                                           secondary_text="Press on the + to add step and save your task with the save icon",
-                                           tertiary_text="Edit your existing task with the pen file icon at the top bar")
-        item.add_widget(IconLeftWidget(icon="repeat"))
+        item = ThreeLineListItem(text="Here you can create and edit tasks",
+                                 secondary_text="Press on the + to add step and save your task with the save icon",
+                                 tertiary_text="Edit your existing task with the pen file icon at the top bar")
         self.ids.container.add_widget(item)
         self.create_tasks_list()
 
@@ -107,7 +107,8 @@ class App(Kivy4):
         for task in tasks:
             self.add_task(task)
 
-    def calculate_next_run_time(self, start_date: str, start_time: str, repeat_every: dict[str, int]) -> datetime:
+    @staticmethod
+    def calculate_next_run_time(start_date: str, start_time: str, repeat_every: dict[str, int]) -> datetime:
         start_date = datetime.strptime(start_date, "%d/%m/%Y")
         start_time = datetime.strptime(start_time, "%H:%M:%S")
 
@@ -119,12 +120,16 @@ class App(Kivy4):
     def reformat_extend_date(next_run_time: datetime) -> str:
         return next_run_time.strftime("Date: %d/%m/%Y | Time: %H:%M:%S")
 
+    def open_task_config(self, action_name: str, content: dict[str, str]):
+        self.current_task_config = TaskConfig(action_name, content, self)
+
     def add_task(self, task: dict):
         next_run_time = self.calculate_next_run_time(task["start_date"], task["start_time"], task["repeat_every"])
         item = ThreeLineAvatarIconListItem(text=task["name"],
                                            secondary_text=f"Action: {task['action']}",
                                            tertiary_text=f"[b]Next run:[/b] {self.reformat_extend_date(next_run_time)}")
         item.add_widget(IconLeftWidget(icon=action_to_icon[task["action"]]))
+        item.add_widget(IconRightWidget(icon="web"))
         self.ids.container.add_widget(item)
 
     def callback(self, x):
@@ -151,26 +156,24 @@ class App(Kivy4):
             python_popup = PythonCommand()
             self.popup_kivy4(title="Run Python Command", content=python_popup,
                              okay_func=lambda *args: self.open_task_config(
-                                 action,
-                                 {"command": python_popup.ids.python_command_input.text}))
+                                 action, {"command": python_popup.ids.python_command_input.text}))
 
         elif action == "Open App":
-            # open file dialog
-            self.file_dialog()
+            chosen_file = self.file_dialog()
+            if chosen_file:
+                self.open_task_config(action, {"file": chosen_file})
 
-    @thread
-    def file_dialog(self):
-        import tkinter as tk
-        from tkinter import filedialog
+        elif action == "Open Website":
+            website_popup = type("WebsitePopup", (BoxLayout,), {})()
+            self.popup_kivy4(title="Open Website", content=website_popup,
+                             okay_func=lambda *args: self.open_task_config(
+                                 action, {"command": website_popup.ids.url_input.text}))
 
+    @staticmethod
+    def file_dialog():
         root = tk.Tk()
         root.withdraw()
-
-        file_path = filedialog.askopenfilename()
-        print(file_path)
-
-    def open_task_config(self, action_name: str, content: dict[str, str]):
-        self.current_task_config = TaskConfig(action_name, content, self)
+        return filedialog.askopenfilename()
 
 
 if __name__ == '__main__':

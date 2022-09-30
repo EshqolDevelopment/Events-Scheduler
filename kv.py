@@ -26,6 +26,17 @@ pre = """
         size_hint_x: 0.9
         font_size: "20dp"
         
+<WebsitePopup>
+    orientation: "vertical"
+    size_hint_y: None
+    height: "70dp"
+    spacing: "10dp"
+
+    MDTextField:
+        id: url_input
+        hint_text: "Enter the website url"
+        size_hint_x: 0.9
+        font_size: "20dp"
 
 <SendEmail>
     orientation: "vertical"
