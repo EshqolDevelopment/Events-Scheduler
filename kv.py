@@ -115,6 +115,16 @@ pre = """
         Input:
             id: minutes_input
             hint_text: "Minutes"     
+            
+<EditTask>
+    orientation: "vertical"
+    size_hint_y: None
+    height: "80dp"
+    
+    Text:
+        text: "Are you sure you want to delete this task?\\nThis action cannot be undone."
+        font_size: "18dp"
+        bold: True
 
 """
 

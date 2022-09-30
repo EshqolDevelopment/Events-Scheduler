@@ -1,3 +1,5 @@
+import webbrowser
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from kivymd.uix.list import ThreeLineAvatarIconListItem, IconLeftWidget, ThreeLineListItem, IconRightWidget
 from kivy4 import *
@@ -14,25 +16,60 @@ action_to_icon = {
 }
 
 
-class SystemCommand(BoxLayout):
-    pass
+@dataclass
+class Task:
+    name: str
+    action: str
+    content: dict[str, str]
+    start_date: str
+    start_time: str
+    repeat_every: dict[str, int]
+    next_run_time: str | None
 
+    def calculate_next_run_time(self) -> datetime:
+        if self.next_run_time is not None:
+            return datetime.strptime(self.next_run_time, "Date: %d/%m/%Y | Time: %H:%M")
 
-class SendEmail(BoxLayout):
-    pass
+        start_date = datetime.strptime(self.start_date, "%d/%m/%Y")
+        start_time = datetime.strptime(self.start_time, "%H:%M:%S")
 
+        return datetime.combine(start_date, start_time.time())
 
-class PythonCommand(BoxLayout):
-    pass
+    @thread
+    def schedule_task(self, gui: "App"):
+        next_run_time = self.calculate_next_run_time()
 
+        while True:
+            if self.next_run_time == "Stop":
+                break
+            if datetime.now() >= next_run_time:
+                self.run_task()
+                next_run_time = datetime.now() + timedelta(**self.repeat_every)
+                self.next_run_time = gui.reformat_extend_date(next_run_time)
+                gui.set_file(f"Tasks/{self.name}", self.__dict__, is_json=True)
+                gui.update_task_row(self)
 
-class SavePopup(BoxLayout):
-    pass
+            time.sleep(1)
+
+    def run_task(self):
+        action = self.action
+        content = self.content
+        if action == "Open App":
+            webbrowser.open(content["app_path"])
+        elif action == "Open Website":
+            webbrowser.open(content["url"])
+        elif action == "System Command":
+            os.system(content["command"])
+        elif action == "Python Command":
+            exec(content["command"])
+
+    def stop(self):
+        self.next_run_time = "Stop"
 
 
 class TaskConfig:
     def __init__(self, action_name: str, content: dict[str, str], gui: "App"):
-        self.save_popup = SavePopup()
+        self.save_popup = type("SavePopup", (BoxLayout,), {})()
         self.gui = gui
         self.content = content
         self.action_name = action_name
@@ -73,17 +110,9 @@ class TaskConfig:
         hours = self.save_popup.ids.hours_input.text
         minutes = self.save_popup.ids.minutes_input.text
         repeat_every = {"days": int(days), "hours": int(hours), "minutes": int(minutes)}
+        task = Task(task_name, self.action_name, self.content, self.start_date, self.start_time, repeat_every, None)
 
-        task = {
-            "name": task_name,
-            "action": self.action_name,
-            "content": self.content,
-            "start_date": self.start_date,
-            "start_time": self.start_time,
-            "repeat_every": repeat_every
-        }
-
-        self.gui.set_file(f"Tasks/{task_name}", task, is_json=True)
+        self.gui.set_file(f"Tasks/{task_name}", task.__dict__, is_json=True)
         self.gui.add_task(task)
         self.gui.dismiss()
 
@@ -94,57 +123,79 @@ class App(Kivy4):
         self.action_dict = action_to_icon
         self.save_popup = None
         self.current_task_config = None
+        self.tasks_dict: dict[str, Task] = {}
 
     def on_start(self):
         item = ThreeLineListItem(text="Here you can create and edit tasks",
-                                 secondary_text="Press on the + to add step and save your task with the save icon",
-                                 tertiary_text="Edit your existing task with the pen file icon at the top bar")
+                                 secondary_text="Press on the + to add a new task to the list",
+                                 tertiary_text="Edit and delete your existing task with the pencil icon")
         self.ids.container.add_widget(item)
         self.create_tasks_list()
 
     def create_tasks_list(self):
         tasks = self.get_files_content("Tasks", is_json=True)
-        for task in tasks:
-            self.add_task(task)
-
-    @staticmethod
-    def calculate_next_run_time(start_date: str, start_time: str, repeat_every: dict[str, int]) -> datetime:
-        start_date = datetime.strptime(start_date, "%d/%m/%Y")
-        start_time = datetime.strptime(start_time, "%H:%M:%S")
-
-        start_datetime = datetime.combine(start_date, start_time.time())
-        repeat_every = timedelta(**repeat_every)
-        return start_datetime + repeat_every
+        for task_dict in tasks:
+            self.add_task(Task(**task_dict))
 
     @staticmethod
     def reformat_extend_date(next_run_time: datetime) -> str:
-        return next_run_time.strftime("Date: %d/%m/%Y | Time: %H:%M:%S")
+        return next_run_time.strftime("Date: %d/%m/%Y | Time: %H:%M")
 
-    def open_task_config(self, action_name: str, content: dict[str, str]):
-        self.current_task_config = TaskConfig(action_name, content, self)
+    def open_task_config(self, action: str, content: dict[str, str]):
+        self.current_task_config = TaskConfig(action, content, self)
 
-    def add_task(self, task: dict):
-        next_run_time = self.calculate_next_run_time(task["start_date"], task["start_time"], task["repeat_every"])
-        item = ThreeLineAvatarIconListItem(text=task["name"],
-                                           secondary_text=f"Action: {task['action']}",
+    def add_task(self, task: Task):
+        next_run_time = task.calculate_next_run_time()
+        item = ThreeLineAvatarIconListItem(text=task.name,
+                                           secondary_text=f"Action: {task.action}",
                                            tertiary_text=f"[b]Next run:[/b] {self.reformat_extend_date(next_run_time)}")
-        item.add_widget(IconLeftWidget(icon=action_to_icon[task["action"]]))
-        item.add_widget(IconRightWidget(icon="web"))
+        item.add_widget(IconLeftWidget(icon=action_to_icon[task.action]))
+        item.add_widget(
+            IconRightWidget(icon="pencil-outline", on_release=lambda *args: self.open_edit_task_dialog(task)))
         self.ids.container.add_widget(item)
+        task.schedule_task(self)
+        self.tasks_dict[task.name] = task
 
-    def callback(self, x):
+    def find_row_by_task(self, task: Task):
+        for row in self.ids.container.children:
+            if row.text == task.name:
+                return row
+
+    def update_task_row(self, task: Task):
+        next_run_time = task.calculate_next_run_time()
+        row = self.find_row_by_task(task)
+        row.secondary_text = f"Action: {task.action}"
+        row.tertiary_text = f"[b]Next run:[/b] {self.reformat_extend_date(next_run_time)}"
+
+    def open_edit_task_dialog(self, task: Task):
+        edit_task_popup = type("EditTask", (BoxLayout,), {})()
+        self.popup_kivy4(title="Delete Task",
+                         content=edit_task_popup,
+                         okay_text="Delete",
+                         cancel_text="Cancel",
+                         okay_func=lambda *args: self.delete_task(task))
+
+    def delete_task(self, task: Task):
+        self.delete_file(f"Tasks/{task.name}.json")
+        self.dismiss()
+        item = self.find_row_by_task(task)
+        self.ids.container.remove_widget(item)
+        self.tasks_dict[task.name].stop()
+        self.tasks_dict.pop(task.name)
+
+    def callback(self, row):
         reverse_action_dict = {action_to_icon[key]: key for key in action_to_icon}
-        action = reverse_action_dict[x.icon]
+        action = reverse_action_dict[row.icon]
 
         if action == "System Command":
-            cmd_popup = SystemCommand()
+            cmd_popup = type("SystemCommand", (BoxLayout,), {})()
             self.popup_kivy4(title="Run System Command", content=cmd_popup,
                              okay_func=lambda *args: self.open_task_config(
                                  action,
                                  {"command": cmd_popup.ids.cmd_command_input.text}))
 
         elif action == "Send Email":
-            email_popup = SendEmail()
+            email_popup = type("SendEmail", (BoxLayout,), {})()
             self.popup_kivy4(title="Send Email", content=email_popup,
                              okay_func=lambda *args: self.open_task_config(
                                  action,
@@ -153,7 +204,7 @@ class App(Kivy4):
                                   "message": email_popup.ids.email_message_input.text}))
 
         elif action == "Python Command":
-            python_popup = PythonCommand()
+            python_popup = type("PythonCommand", (BoxLayout,), {})()
             self.popup_kivy4(title="Run Python Command", content=python_popup,
                              okay_func=lambda *args: self.open_task_config(
                                  action, {"command": python_popup.ids.python_command_input.text}))
@@ -161,13 +212,13 @@ class App(Kivy4):
         elif action == "Open App":
             chosen_file = self.file_dialog()
             if chosen_file:
-                self.open_task_config(action, {"file": chosen_file})
+                self.open_task_config(action, {"app_path": chosen_file})
 
         elif action == "Open Website":
             website_popup = type("WebsitePopup", (BoxLayout,), {})()
             self.popup_kivy4(title="Open Website", content=website_popup,
                              okay_func=lambda *args: self.open_task_config(
-                                 action, {"command": website_popup.ids.url_input.text}))
+                                 action, {"url": website_popup.ids.url_input.text}))
 
     @staticmethod
     def file_dialog():

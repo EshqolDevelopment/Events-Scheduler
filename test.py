@@ -1,8 +1,16 @@
-import tkinter as tk
-from tkinter import filedialog
+from dataclasses import dataclass
 
-root = tk.Tk()
-root.withdraw()
 
-file_path = filedialog.askopenfilename()
-print(file_path)
+@dataclass
+class Task:
+    name: str
+    action: str
+    content: dict[str, str]
+    start_date: str
+    start_time: str
+    repeat_every: dict[str, int]
+    next_run_time: str | None
+
+task = Task("test", "test", {"test": "test"}, "test", "test", {"test": 1}, "test")
+task.aaaaaaaaaaaaaaaaaa()
+print(task.__dict__)
