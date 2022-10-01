@@ -145,7 +145,7 @@ Screen:
                 id: container
 
     MDFloatingActionButtonSpeedDial:
-        data: app.action_dict  
+        data: app.action_to_icon  
         bg_hint_color: app.theme_cls.primary_light
         callback: app.callback
         

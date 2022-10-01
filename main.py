@@ -19,7 +19,7 @@ action_to_icon = {
 class App(Kivy4):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.action_dict = action_to_icon
+        self.action_to_icon = action_to_icon
         self.save_popup = None
         self.current_task_config = None
         self.tasks_dict: dict[str, Task] = {}

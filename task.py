@@ -4,7 +4,7 @@ import webbrowser
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from kivy4 import thread, measure_time
+from kivy4 import thread
 from typing import TYPE_CHECKING
 from time_operations import reformat_extend_date
 import hashlib
