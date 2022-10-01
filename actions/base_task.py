@@ -5,7 +5,10 @@ if TYPE_CHECKING:
 
 
 class BaseTask(ABC):
-    action: str
+    @property
+    @abstractmethod
+    def action(self) -> str:
+        pass
 
     @abstractmethod
     def config(self, gui: "App"):
