@@ -18,7 +18,7 @@ class Task:
     start_date: str
     start_time: str
     repeat_every: dict[str, int]
-    next_run_time: str | None
+    next_run_time: str
 
     @property
     def id(self):

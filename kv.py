@@ -87,8 +87,6 @@ pre = """
             icon: "calendar-range"
             text: "  Start Date"
             size_hint_x: 1
-            text_color: 1, 1, 1, 1
-            icon_color: 1, 1, 1, 1
             on_release: app.current_task_config.pick_start_date()
         
         BtnIcon:
@@ -96,13 +94,12 @@ pre = """
             icon: "clock-time-four"
             text: "  Start Time"
             size_hint_x: 1
-            text_color: 1, 1, 1, 1
-            icon_color: 1, 1, 1, 1
             on_release: app.current_task_config.pick_start_time()
                         
         
     Text:
-        text: "Run every 40 minutes and 30 seconds"
+        text: "Don't repeat"
+        id: repeat_text
     
     BoxLayout:
         spacing: "5dp"
@@ -110,14 +107,17 @@ pre = """
         Input:
             id: days_input
             hint_text: "Days"
+            on_text: app.update_repeat_text()
         
         Input:
             id: hours_input
             hint_text: "Hours"
+            on_text: app.update_repeat_text()
         
         Input:
             id: minutes_input
             hint_text: "Minutes"     
+            on_text: app.update_repeat_text()
             
 <DeleteTask>
     orientation: "vertical"

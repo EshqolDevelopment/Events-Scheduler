@@ -1,3 +1,32 @@
+import socket
+import sys
+
+APP_NAME = "Events Scheduler"
+
+try:
+    s = socket.socket()
+    host = socket.gethostname()
+    port = 12382
+    s.bind((host, port))
+except Exception:
+    try:
+        import win32com.client
+        import win32con
+        import win32gui
+
+        shell = win32com.client.Dispatch("WScript.Shell")
+        shell.SendKeys('%')
+        HWND = win32gui.FindWindowEx(0, 0, 0, APP_NAME)
+        win32gui.ShowWindow(HWND, win32con.SW_RESTORE)
+        win32gui.SetWindowPos(HWND, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
+        win32gui.SetWindowPos(HWND, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
+        win32gui.SetWindowPos(HWND, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+                              win32con.SWP_SHOWWINDOW + win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
+        win32gui.SetForegroundWindow(HWND)
+        sys.exit()
+    except Exception:
+        sys.exit()
+
 from kivymd.uix.list import ThreeLineAvatarIconListItem, IconLeftWidget, ThreeLineListItem, IconRightWidget
 from kivy4 import *
 from kv import *
@@ -27,6 +56,7 @@ class App(Kivy4):
     def create_tasks_list(self):
         tasks = self.get_files_content("Tasks", is_json=True)
         for task_dict in tasks:
+            task_dict["next_run_time"] = task_dict.get("next_run_time")
             self.add_task(Task(**task_dict))
 
     def open_task_config(self, action: str, content: dict[str, str]):
@@ -80,6 +110,12 @@ class App(Kivy4):
         Window.hide()
         return True
 
+    def update_repeat_text(self):
+        days = self.ids.days_input
+        hours = self.ids.hours_inut
+        minutes = self.ids.minutes_input
+        self.ids.repeat_text = f''
+
 
 def file_dialog():
     root = tk.Tk()
@@ -88,5 +124,5 @@ def file_dialog():
 
 
 if __name__ == '__main__':
-    App(app_name='Events Scheduler', string=kiv, app_data=True, main_color='Orange', pre_string=pre, toolbar=True,
+    App(app_name=APP_NAME, string=kiv, app_data=True, main_color='Orange', pre_string=pre, toolbar=True,
         list_of_dirs=["Tasks"]).run()
