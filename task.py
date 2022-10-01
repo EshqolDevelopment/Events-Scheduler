@@ -6,6 +6,7 @@ from kivy4 import thread
 from typing import TYPE_CHECKING
 from time_operations import reformat_extend_date
 import hashlib
+
 if TYPE_CHECKING:
     from main import App
 
@@ -44,6 +45,10 @@ class Task:
                 break
             if datetime.now() >= next_run_time:
                 self.run_task()
+                if not (self.repeat_every["days"] or self.repeat_every["hours"] or self.repeat_every["minutes"]):
+                    gui.delete_task(self)
+                    return
+
                 while next_run_time <= datetime.now():
                     next_run_time += timedelta(**self.repeat_every)
 

@@ -41,30 +41,34 @@ pre = """
         size_hint_x: 0.9
         font_size: "20dp"
 
-<SendEmail>
+<SystemOperation>
     orientation: "vertical"
     size_hint_y: None
-    height: "250dp"
+    height: "300dp"
     spacing: "10dp"
-    
-    Input:
-        id: email_to_input
-        hint_text: "Enter email address"
-        size_hint_x: 1
-    
-    Input:
-        id: email_subject_input
-        hint_text: "Enter a subject"
-        size_hint_x: 1
-        font_size: "16dp"
         
-    Input:
-        id: email_message_input
-        hint_text: "Enter a message"
-        size_hint_x: 1
-        font_size: "16dp"
-        multiline: True
-        size_hint_y: "100dp"
+    MDList:
+        id: system_operation_list
+        selected_mode: True
+        OneLineListItem:
+            text: "Shutdown"
+            on_release: app.open_task_config("System Operation", {"command": "shutdown /s /t 0"})
+        OneLineListItem:
+            text: "Restart"
+            on_release: app.open_task_config("System Operation", {"command": "shutdown /r /t 0"})
+        OneLineListItem:
+            text: "Log off"
+            on_release: app.open_task_config("System Operation", {"command": "shutdown /l /t 0"})
+        OneLineListItem:
+            text: "Lock"
+            on_release: app.open_task_config("System Operation", {"command": "rundll32.exe user32.dll,LockWorkStation"})
+        OneLineListItem:
+            text: "Sleep"
+            on_release: app.open_task_config("System Operation", {"command": "rundll32.exe powrprof.dll,SetSuspendState 0,1,0"})
+        OneLineListItem:
+            text: "Hibernate"
+            on_release: app.open_task_config("System Operation", {"command": "rundll32.exe powrprof.dll,SetSuspendState 1,1,0"}) 
+     
         
 <SavePopup>
     orientation: "vertical"
@@ -98,7 +102,7 @@ pre = """
                         
         
     Text:
-        text: "Don't repeat"
+        text: app.parse_repeat_text(days_input.text, hours_input.text, minutes_input.text) 
         id: repeat_text
     
     BoxLayout:
@@ -107,17 +111,17 @@ pre = """
         Input:
             id: days_input
             hint_text: "Days"
-            on_text: app.update_repeat_text()
+            # on_text: app.update_repeat_text()
         
         Input:
             id: hours_input
             hint_text: "Hours"
-            on_text: app.update_repeat_text()
+            # on_text: app.update_repeat_text()
         
         Input:
             id: minutes_input
             hint_text: "Minutes"     
-            on_text: app.update_repeat_text()
+            # on_text: app.update_repeat_text()
             
 <DeleteTask>
     orientation: "vertical"

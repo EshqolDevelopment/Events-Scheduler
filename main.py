@@ -1,6 +1,8 @@
 import socket
 import sys
 
+from kivy.clock import mainthread
+
 APP_NAME = "Events Scheduler"
 
 try:
@@ -93,6 +95,7 @@ class App(Kivy4):
                          cancel_text="Cancel",
                          okay_func=lambda *args: self.delete_task(task))
 
+    @mainthread
     def delete_task(self, task: Task):
         self.delete_file(f"Tasks/{task.id}.json")
         self.dismiss()
@@ -110,11 +113,22 @@ class App(Kivy4):
         Window.hide()
         return True
 
-    def update_repeat_text(self):
-        days = self.ids.days_input
-        hours = self.ids.hours_inut
-        minutes = self.ids.minutes_input
-        self.ids.repeat_text = f''
+    @staticmethod
+    def parse_repeat_text(days, hours, minutes):
+        days = days if days else "0"
+        hours = hours if hours else "0"
+        minutes = minutes if minutes else "0"
+
+        try:
+            days = int(days)
+            minutes = int(minutes)
+            hours = int(hours)
+            if not (days or hours or minutes):
+                return "Run once at the start date"
+
+            return f"Repeat every {days} days, {hours} hours and {minutes} minutes"
+        except Exception:
+            return "Invalid inputs"
 
 
 def file_dialog():

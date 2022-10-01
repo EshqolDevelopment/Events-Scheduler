@@ -1,7 +1,7 @@
 from actions.open_app import OpenApp
 from actions.open_website import OpenWebsite
 from actions.python_command import PythonCommand
-from actions.send_email import SendEmail
+from actions.system_operation import SystemOperation
 from actions.system_command import SystemCommand
 
 action_dict = {
@@ -13,9 +13,9 @@ action_dict = {
         "icon": 'console',
         "class": SystemCommand()
     },
-    'Send Email': {
-        "icon": 'email',
-        "class": SendEmail()
+    'System Operation': {
+        "icon": 'microsoft-windows',
+        "class": SystemOperation()
     },
     'Python Command': {
         "icon": 'language-python',

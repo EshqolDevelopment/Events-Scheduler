@@ -1,3 +1,4 @@
+import os.path
 from datetime import datetime
 from typing import TYPE_CHECKING
 from kivy.uix.boxlayout import BoxLayout
@@ -39,11 +40,36 @@ class TaskConfig:
 
     def save_current_task(self):
         task_name = self.save_popup.ids.save_name_input.text
-        days = self.save_popup.ids.days_input.text
-        hours = self.save_popup.ids.hours_input.text
-        minutes = self.save_popup.ids.minutes_input.text
+        days = self.save_popup.ids.days_input.text or "0"
+        hours = self.save_popup.ids.hours_input.text or "0"
+        minutes = self.save_popup.ids.minutes_input.text or "0"
+
+        if not task_name:
+            self.gui.toast("Please enter a name for the task", 5)
+            return
+
+        try:
+            days = int(days)
+            hours = int(hours)
+            minutes = int(minutes)
+        except ValueError:
+            self.gui.toast("Please enter valid numbers for days, hours and minutes", 5)
+            return
+
+        if not self.start_date:
+            self.gui.toast("Please enter a start date", 5)
+            return
+
+        if not self.start_time:
+            self.gui.toast("Please enter a start time", 5)
+            return
+
         repeat_every = {"days": int(days), "hours": int(hours), "minutes": int(minutes)}
         task = Task(task_name, self.action_name, self.content, self.start_date, self.start_time, repeat_every, None)
+
+        if os.path.exists(f"{self.gui.appdata_path}/Tasks/{task.id}.json"):
+            self.gui.toast("Task with this name already exists")
+            return
 
         self.gui.set_file(f"Tasks/{task.id}", task.__dict__, is_json=True)
         self.gui.add_task(task)
