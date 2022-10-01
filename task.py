@@ -3,10 +3,11 @@ import time
 import webbrowser
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from kivy4 import thread
+
+from kivy4 import thread, measure_time
 from typing import TYPE_CHECKING
 from time_operations import reformat_extend_date
-
+import hashlib
 if TYPE_CHECKING:
     from main import App
 
@@ -20,6 +21,12 @@ class Task:
     start_time: str
     repeat_every: dict[str, int]
     next_run_time: str | None
+
+    @property
+    def id(self):
+        sha1 = hashlib.sha1()
+        sha1.update(self.name.encode())
+        return sha1.hexdigest()
 
     def calculate_next_run_time(self) -> datetime:
         if self.next_run_time is not None:
@@ -39,9 +46,11 @@ class Task:
                 break
             if datetime.now() >= next_run_time:
                 self.run_task()
-                next_run_time = datetime.now() + timedelta(**self.repeat_every)
+                while next_run_time <= datetime.now():
+                    next_run_time += timedelta(**self.repeat_every)
+
                 self.next_run_time = reformat_extend_date(next_run_time)
-                gui.set_file(f"Tasks/{self.name}", self.__dict__, is_json=True)
+                gui.set_file(f"Tasks/{self.id}", self.__dict__, is_json=True)
                 gui.update_task_row(self)
 
             time.sleep(1)
@@ -57,6 +66,8 @@ class Task:
             os.system(content["command"])
         elif action == "Python Command":
             exec(content["command"])
+        elif action == "Send Email":
+            print("Sending email...")
 
     def stop(self):
         self.next_run_time = "Stop"

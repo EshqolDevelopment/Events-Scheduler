@@ -45,6 +45,6 @@ class TaskConfig:
         repeat_every = {"days": int(days), "hours": int(hours), "minutes": int(minutes)}
         task = Task(task_name, self.action_name, self.content, self.start_date, self.start_time, repeat_every, None)
 
-        self.gui.set_file(f"Tasks/{task_name}", task.__dict__, is_json=True)
+        self.gui.set_file(f"Tasks/{task.id}", task.__dict__, is_json=True)
         self.gui.add_task(task)
         self.gui.dismiss()

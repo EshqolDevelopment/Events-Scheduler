@@ -41,7 +41,7 @@ class App(Kivy4):
 
     def add_task(self, task: Task):
         next_run_time = task.calculate_next_run_time()
-        item = ThreeLineAvatarIconListItem(text=task.name,
+        item = ThreeLineAvatarIconListItem(text=f"[b]{task.name}[/b]",
                                            secondary_text=f"Action: {task.action}",
                                            tertiary_text=f"[b]Next run:[/b] {reformat_extend_date(next_run_time)}")
         item.add_widget(IconLeftWidget(icon=action_to_icon[task.action]))
@@ -53,7 +53,7 @@ class App(Kivy4):
 
     def find_row_by_task(self, task: Task):
         for row in self.ids.container.children:
-            if row.text == task.name:
+            if row.text == f"[b]{task.name}[/b]":
                 return row
 
     def update_task_row(self, task: Task):
