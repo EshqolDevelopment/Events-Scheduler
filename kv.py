@@ -17,16 +17,19 @@ pre = """
 <PythonCommand>
     orientation: "vertical"
     size_hint_y: None
-    height: "70dp"
+    height: "140dp"
     spacing: "10dp"
 
-    MDTextField:
+    Input:
         id: python_command_input
-        hint_text: "Enter a python command"
-        size_hint_x: 0.9
-        font_size: "20dp"
+        hint_text: "Enter python code"
+        multiline: True
+        size_hint_x: 1
+        font_size: "18dp"
+        size_hint_y: 0.9
         
-<WebsitePopup>
+        
+<OpenWebsite>
     orientation: "vertical"
     size_hint_y: None
     height: "70dp"
@@ -116,7 +119,7 @@ pre = """
             id: minutes_input
             hint_text: "Minutes"     
             
-<EditTask>
+<DeleteTask>
     orientation: "vertical"
     size_hint_y: None
     height: "80dp"

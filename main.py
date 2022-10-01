@@ -18,9 +18,9 @@ class App(Kivy4):
         self.tasks_dict: dict[str, Task] = {}
 
     def on_start(self):
-        item = ThreeLineListItem(text="Here you can create and edit tasks",
+        item = ThreeLineListItem(text="Here you can create and edit your tasks",
                                  secondary_text="Press on the + to add a new task to the list",
-                                 tertiary_text="Edit and delete your existing task with the pencil icon")
+                                 tertiary_text="Delete a task by pressing on the trash icon on the right")
         self.ids.container.add_widget(item)
         self.create_tasks_list()
 
@@ -39,7 +39,7 @@ class App(Kivy4):
                                            tertiary_text=f"[b]Next run:[/b] {reformat_extend_date(next_run_time)}")
         item.add_widget(IconLeftWidget(icon=self.action_to_icon[task.action]))
         item.add_widget(
-            IconRightWidget(icon="pencil-outline", on_release=lambda *args: self.open_edit_task_dialog(task)))
+            IconRightWidget(icon="delete-outline", on_release=lambda *args: self.open_delete_task_dialog(task)))
         self.ids.container.add_widget(item)
         task.schedule_task(self)
         self.tasks_dict[task.name] = task
@@ -55,16 +55,16 @@ class App(Kivy4):
         row.secondary_text = f"Action: {task.action}"
         row.tertiary_text = f"[b]Next run:[/b] {reformat_extend_date(next_run_time)}"
 
-    def open_edit_task_dialog(self, task: Task):
-        edit_task_popup = type("EditTask", (BoxLayout,), {})()
+    def open_delete_task_dialog(self, task: Task):
+        delete_task_popup = type("DeleteTask", (BoxLayout,), {})()
         self.popup_kivy4(title="Delete Task",
-                         content=edit_task_popup,
+                         content=delete_task_popup,
                          okay_text="Delete",
                          cancel_text="Cancel",
                          okay_func=lambda *args: self.delete_task(task))
 
     def delete_task(self, task: Task):
-        self.delete_file(f"Tasks/{task.name}.json")
+        self.delete_file(f"Tasks/{task.id}.json")
         self.dismiss()
         item = self.find_row_by_task(task)
         self.ids.container.remove_widget(item)
@@ -74,8 +74,11 @@ class App(Kivy4):
     def callback(self, row):
         reverse_action_dict = {self.action_to_icon[key]: key for key in self.action_to_icon}
         action = reverse_action_dict[row.icon]
-
         action_dict[action]["class"].config(self)
+
+    def on_request_close(self, disable_x: bool = True):
+        Window.hide()
+        return True
 
 
 def file_dialog():
