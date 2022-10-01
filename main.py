@@ -6,20 +6,13 @@ from tkinter import filedialog
 from task import Task
 from task_config import TaskConfig
 from time_operations import reformat_extend_date
-
-action_to_icon = {
-    'Open App': 'launch',
-    'System Command': 'console',
-    'Send Email': 'email',
-    'Python Command': 'language-python',
-    'Open Website': 'web',
-}
+from actions import action_dict
 
 
 class App(Kivy4):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.action_to_icon = action_to_icon
+        self.action_to_icon = {k: v["icon"] for k, v in action_dict.items()}
         self.save_popup = None
         self.current_task_config = None
         self.tasks_dict: dict[str, Task] = {}
@@ -44,7 +37,7 @@ class App(Kivy4):
         item = ThreeLineAvatarIconListItem(text=f"[b]{task.name}[/b]",
                                            secondary_text=f"Action: {task.action}",
                                            tertiary_text=f"[b]Next run:[/b] {reformat_extend_date(next_run_time)}")
-        item.add_widget(IconLeftWidget(icon=action_to_icon[task.action]))
+        item.add_widget(IconLeftWidget(icon=self.action_to_icon[task.action]))
         item.add_widget(
             IconRightWidget(icon="pencil-outline", on_release=lambda *args: self.open_edit_task_dialog(task)))
         self.ids.container.add_widget(item)
@@ -79,41 +72,10 @@ class App(Kivy4):
         self.tasks_dict.pop(task.name)
 
     def callback(self, row):
-        reverse_action_dict = {action_to_icon[key]: key for key in action_to_icon}
+        reverse_action_dict = {self.action_to_icon[key]: key for key in self.action_to_icon}
         action = reverse_action_dict[row.icon]
 
-        if action == "System Command":
-            cmd_popup = type("SystemCommand", (BoxLayout,), {})()
-            self.popup_kivy4(title="Run System Command", content=cmd_popup,
-                             okay_func=lambda *args: self.open_task_config(
-                                 action,
-                                 {"command": cmd_popup.ids.cmd_command_input.text}))
-
-        elif action == "Send Email":
-            email_popup = type("SendEmail", (BoxLayout,), {})()
-            self.popup_kivy4(title="Send Email", content=email_popup,
-                             okay_func=lambda *args: self.open_task_config(
-                                 action,
-                                 {"to": email_popup.ids.email_to_input.text,
-                                  "subject": email_popup.ids.email_subject_input.text,
-                                  "message": email_popup.ids.email_message_input.text}))
-
-        elif action == "Python Command":
-            python_popup = type("PythonCommand", (BoxLayout,), {})()
-            self.popup_kivy4(title="Run Python Command", content=python_popup,
-                             okay_func=lambda *args: self.open_task_config(
-                                 action, {"command": python_popup.ids.python_command_input.text}))
-
-        elif action == "Open App":
-            chosen_file = file_dialog()
-            if chosen_file:
-                self.open_task_config(action, {"app_path": chosen_file})
-
-        elif action == "Open Website":
-            website_popup = type("WebsitePopup", (BoxLayout,), {})()
-            self.popup_kivy4(title="Open Website", content=website_popup,
-                             okay_func=lambda *args: self.open_task_config(
-                                 action, {"url": website_popup.ids.url_input.text}))
+        action_dict[action]["class"].config(self)
 
 
 def file_dialog():

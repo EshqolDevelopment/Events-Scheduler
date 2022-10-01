@@ -1,9 +1,7 @@
-import os
 import time
-import webbrowser
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-
+from actions import action_dict
 from kivy4 import thread
 from typing import TYPE_CHECKING
 from time_operations import reformat_extend_date
@@ -58,16 +56,7 @@ class Task:
     def run_task(self):
         action = self.action
         content = self.content
-        if action == "Open App":
-            webbrowser.open(content["app_path"])
-        elif action == "Open Website":
-            webbrowser.open(content["url"])
-        elif action == "System Command":
-            os.system(content["command"])
-        elif action == "Python Command":
-            exec(content["command"])
-        elif action == "Send Email":
-            print("Sending email...")
+        action_dict[action]["class"].run(content)
 
     def stop(self):
         self.next_run_time = "Stop"
