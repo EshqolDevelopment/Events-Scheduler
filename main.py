@@ -4,30 +4,32 @@ import sys
 from kivy.clock import mainthread
 
 APP_NAME = "Events Scheduler"
+print(sys.platform)
 
-try:
-    s = socket.socket()
-    host = socket.gethostname()
-    port = 12382
-    s.bind((host, port))
-except Exception:
+if sys.platform != "darwin":
     try:
-        import win32com.client
-        import win32con
-        import win32gui
-
-        shell = win32com.client.Dispatch("WScript.Shell")
-        shell.SendKeys('%')
-        HWND = win32gui.FindWindowEx(0, 0, 0, APP_NAME)
-        win32gui.ShowWindow(HWND, win32con.SW_RESTORE)
-        win32gui.SetWindowPos(HWND, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
-        win32gui.SetWindowPos(HWND, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
-        win32gui.SetWindowPos(HWND, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
-                              win32con.SWP_SHOWWINDOW + win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
-        win32gui.SetForegroundWindow(HWND)
-        sys.exit()
+        s = socket.socket()
+        host = socket.gethostname()
+        port = 12382
+        s.bind((host, port))
     except Exception:
-        sys.exit()
+        try:
+            import win32com.client
+            import win32con
+            import win32gui
+
+            shell = win32com.client.Dispatch("WScript.Shell")
+            shell.SendKeys('%')
+            HWND = win32gui.FindWindowEx(0, 0, 0, APP_NAME)
+            win32gui.ShowWindow(HWND, win32con.SW_RESTORE)
+            win32gui.SetWindowPos(HWND, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
+            win32gui.SetWindowPos(HWND, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
+            win32gui.SetWindowPos(HWND, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+                                  win32con.SWP_SHOWWINDOW + win32con.SWP_NOMOVE + win32con.SWP_NOSIZE)
+            win32gui.SetForegroundWindow(HWND)
+            sys.exit()
+        except Exception:
+            sys.exit()
 
 from kivymd.uix.list import ThreeLineAvatarIconListItem, IconLeftWidget, ThreeLineListItem, IconRightWidget
 from kivy4 import *

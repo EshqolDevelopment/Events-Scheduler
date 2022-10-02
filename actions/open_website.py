@@ -22,4 +22,4 @@ class OpenWebsite(BaseTask):
         gui.popup_kivy4(title="Open Website", content=website_popup, okay_func=okay_func)
 
     def run(self, content: dict[str, str]):
-        webbrowser.open(content["url"])
+        webbrowser.open(content["website"])
