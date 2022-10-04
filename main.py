@@ -3,8 +3,7 @@ import sys
 
 from kivy.clock import mainthread
 
-APP_NAME = "Events Scheduler"
-print(sys.platform)
+APP_NAME = "Events Scheduler Pro"
 
 if sys.platform != "darwin":
     try:
@@ -141,4 +140,4 @@ def file_dialog():
 
 if __name__ == '__main__':
     App(app_name=APP_NAME, string=kiv, app_data=True, main_color='Orange', pre_string=pre, toolbar=True,
-        list_of_dirs=["Tasks"]).run()
+        list_of_dirs=["Tasks"], icon="icon.png").run()
