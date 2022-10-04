@@ -58,7 +58,7 @@ pre = """
             on_release: app.open_task_config("System Operation", {"command": "shutdown /r /t 0"})
         OneLineListItem:
             text: "Log off"
-            on_release: app.open_task_config("System Operation", {"command": "shutdown /l /t 0"})
+            on_release: app.open_task_config("System Operation", {"command": "shutdown /l"})
         OneLineListItem:
             text: "Lock"
             on_release: app.open_task_config("System Operation", {"command": "rundll32.exe user32.dll,LockWorkStation"})
@@ -111,17 +111,14 @@ pre = """
         Input:
             id: days_input
             hint_text: "Days"
-            # on_text: app.update_repeat_text()
         
         Input:
             id: hours_input
             hint_text: "Hours"
-            # on_text: app.update_repeat_text()
         
         Input:
             id: minutes_input
             hint_text: "Minutes"     
-            # on_text: app.update_repeat_text()
             
 <DeleteTask>
     orientation: "vertical"
