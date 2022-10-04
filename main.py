@@ -56,6 +56,11 @@ class App(Kivy4):
         self.ids.container.add_widget(item)
         self.create_tasks_list()
 
+        first_run = self.get_file("first_run", default="True")
+
+        if first_run == "True":
+            self.open_info_popup()
+
     def create_tasks_list(self):
         tasks = self.get_files_content("Tasks", is_json=True)
         for task_dict in tasks:
@@ -131,6 +136,19 @@ class App(Kivy4):
         except Exception:
             return "Invalid inputs"
 
+    def open_info_popup(self, *_):
+        def okay_func(*_):
+            self.set_file("first_run", "False")
+            self.dismiss()
+
+        welcome_popup = type("Welcome", (BoxLayout,), {})()
+        self.popup_kivy4(title="Welcome to Events Scheduler Pro",
+                         content=welcome_popup,
+                         okay_text="Got it",
+                         cancel_text="",
+                         cancel_func=lambda *args: ...,
+                         okay_func=okay_func)
+
 
 def file_dialog():
     root = tk.Tk()
@@ -139,5 +157,5 @@ def file_dialog():
 
 
 if __name__ == '__main__':
-    App(app_name=APP_NAME, string=kiv, app_data=True, main_color='Orange', pre_string=pre, toolbar=True,
+    App(app_name=APP_NAME, string=kiv, app_data=True, main_color='Orange', pre_string=pre, toolbar=['[["information-variant", app.open_info_popup]]', '[[app.dark_mode_icon, lambda x: app.reverse_dark_mode()]]'],
         list_of_dirs=["Tasks"], icon="icon.png").run()
