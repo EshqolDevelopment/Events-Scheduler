@@ -156,5 +156,7 @@ def file_dialog():
 
 
 if __name__ == '__main__':
-    App(app_name=APP_NAME, string=kiv, app_data=True, main_color='Orange', pre_string=pre, toolbar=['[["information-variant", app.open_info_popup]]', '[[app.dark_mode_icon, lambda x: app.reverse_dark_mode()]]'],
+    App(app_name=APP_NAME, string=kiv, app_data=True, main_color='Orange', pre_string=pre,
+        toolbar=['[["information-variant", app.open_info_popup]]',
+                 '[[app.dark_mode_icon, lambda x: app.reverse_dark_mode()]]'],
         list_of_dirs=["Tasks"], icon="icon.png").run()
