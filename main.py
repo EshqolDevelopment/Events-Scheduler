@@ -146,7 +146,6 @@ class App(Kivy4):
                          content=welcome_popup,
                          okay_text="Got it",
                          cancel_text="",
-                         cancel_func=lambda *args: ...,
                          okay_func=okay_func)
 
 

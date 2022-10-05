@@ -138,8 +138,6 @@ pre = """
     Text:
         text: "Welcome to Task Scheduler!\\n\\nTo get started, click the plus button in the bottom right corner to add a task.\\n\\nTou can change the theme from dark to light in the top right corner.\\n\\nTask Schedular pro is design to replace the default windows alternative, with a modern and simpler interface.\\n\\nThe app allow anyone without any technical knowledge to use it.\\n\\nHere is the list of the supported tasks:\\n  - System Command\\n  - Python Command\\n  - Open Website\\n  - System Operation"
         halign: "left"
-    
-    
 
 """
 
