@@ -27,7 +27,7 @@ action_dict = {
         "class": OpenWebsite()
     },
     'Macro Recorder': {
-        "icon": "web",
+        "icon": "radiobox-marked",
         "class": MacroRecorder()
     }
 }
