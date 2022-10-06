@@ -3,6 +3,7 @@ from actions.open_website import OpenWebsite
 from actions.python_command import PythonCommand
 from actions.system_operation import SystemOperation
 from actions.system_command import SystemCommand
+from actions.macro_recorder import MacroRecorder
 
 action_dict = {
     'Open App': {
@@ -25,4 +26,8 @@ action_dict = {
         "icon": 'web',
         "class": OpenWebsite()
     },
+    'Macro Recorder': {
+        "icon": "web",
+        "class": MacroRecorder()
+    }
 }
