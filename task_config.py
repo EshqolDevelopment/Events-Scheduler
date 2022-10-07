@@ -10,19 +10,33 @@ if TYPE_CHECKING:
 
 
 class TaskConfig:
-    def __init__(self, action_name: str, content: dict[str, str], gui: "App"):
+    def __init__(self, action_name: str, content: dict[str, str], gui: "App", task: Task = None):
         self.save_popup = type("SavePopup", (BoxLayout,), {})()
         self.gui = gui
         self.content = content
         self.action_name = action_name
         self.start_date = None
         self.start_time = None
+        self.edit = True if task else False
 
         self.gui.popup_kivy4(title="Save and Schedule Task",
                              content=self.save_popup,
                              okay_func=lambda *args: self.save_current_task(),
                              okay_text="Save and Schedule",
                              cancel_text="Cancel")
+
+        if task:
+            self.save_popup.ids.start_date.text = f"  Start Date: {task.start_date}"
+            self.save_popup.ids.start_time.text = f"  Start Time: {task.start_time}"
+            self.start_date = task.start_date
+            self.start_time = task.start_time
+            self.save_popup.ids.save_name_input.text = task.name
+            self.save_popup.ids.days_input.text = str(task.repeat_every["days"])
+            self.save_popup.ids.hours_input.text = str(task.repeat_every["hours"])
+            self.save_popup.ids.minutes_input.text = str(task.repeat_every["minutes"])
+            self.save_popup.ids.save_name_input.disabled = True
+            self.save_popup.ids.save_name_input.opacity = 0.6
+
 
     def pick_start_date(self):
         self.gui.show_date_picker(on_save=lambda *args: self.save_start_date(args[1]))
@@ -67,10 +81,13 @@ class TaskConfig:
         repeat_every = {"days": int(days), "hours": int(hours), "minutes": int(minutes)}
         task = Task(task_name, self.action_name, self.content, self.start_date, self.start_time, repeat_every, None)
 
-        if os.path.exists(f"{self.gui.appdata_path}/Tasks/{task.id}.json"):
+        if not self.edit and os.path.exists(f"{self.gui.appdata_path}/Tasks/{task.id}.json"):
             self.gui.toast("Task with this name already exists")
             return
 
         self.gui.set_file(f"Tasks/{task.id}", task.__dict__, is_json=True)
-        self.gui.add_task(task)
+        if not self.edit:
+            self.gui.add_task(task)
+        else:
+            self.gui.update_task_row(task)
         self.gui.dismiss()

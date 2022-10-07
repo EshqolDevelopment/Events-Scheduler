@@ -40,6 +40,8 @@ from task_config import TaskConfig
 from time_operations import reformat_extend_date
 from actions import action_dict
 
+spacer = " " * 25
+
 
 class App(Kivy4):
     def __init__(self, **kwargs):
@@ -67,31 +69,37 @@ class App(Kivy4):
             task_dict["next_run_time"] = task_dict.get("next_run_time")
             self.add_task(Task(**task_dict))
 
-    def open_task_config(self, action: str, content: dict[str, str]):
-        self.current_task_config = TaskConfig(action, content, self)
+    def open_task_config(self, action: str, content: dict[str, str], task: Task = None):
+        self.current_task_config = TaskConfig(action, content, self, task)
 
     def add_task(self, task: Task):
         next_run_time = task.calculate_next_run_time()
-        item = ThreeLineAvatarIconListItem(text=f"[b]{task.name}[/b]",
-                                           secondary_text=f"Action: {task.action}",
-                                           tertiary_text=f"[b]Next run:[/b] {reformat_extend_date(next_run_time)}")
-        item.add_widget(IconLeftWidget(icon=self.action_to_icon[task.action]))
-        item.add_widget(
-            IconRightWidget(icon="delete-outline", on_release=lambda *args: self.open_delete_task_dialog(task)))
+        item = ThreeLineAvatarIconListItem(text=f"{spacer}[b]{task.name}[/b]",
+                                           secondary_text=f"{spacer}Action: {task.action}",
+                                           tertiary_text=f"{spacer}[b]Next run:[/b] {reformat_extend_date(next_run_time)}")
+        item.add_widget(IconRightWidget(icon=self.action_to_icon[task.action]))
+        item.add_widget(IconLeftWidget(icon="delete-outline", on_release=lambda *args: self.open_delete_task_dialog(task)))
+        item.add_widget(IconLeftWidget(icon="pencil-outline", on_release=lambda *args: self.open_edit_task_dialog(task)))
+        item.add_widget(IconLeftWidget(icon="play-circle-outline", on_release=lambda *args: task.run_task()))
+
         self.ids.container.add_widget(item)
         task.schedule_task(self)
         self.tasks_dict[task.name] = task
 
-    def find_row_by_task(self, task: Task):
+    def open_edit_task_dialog(self, task: Task):
+        self.open_task_config(task.action, task.content, task)
+
+    def find_row_by_task(self, name: str):
         for row in self.ids.container.children:
-            if row.text == f"[b]{task.name}[/b]":
+            if row.text == f"{spacer}[b]{name}[/b]":
                 return row
 
     def update_task_row(self, task: Task):
         next_run_time = task.calculate_next_run_time()
-        row = self.find_row_by_task(task)
-        row.secondary_text = f"Action: {task.action}"
-        row.tertiary_text = f"[b]Next run:[/b] {reformat_extend_date(next_run_time)}"
+        row = self.find_row_by_task(task.name)
+        row.text = f"{spacer}[b]{task.name}[/b]"
+        row.secondary_text = f"{spacer}Action: {task.action}"
+        row.tertiary_text = f"{spacer}[b]Next run:[/b] {reformat_extend_date(next_run_time)}"
 
     def open_delete_task_dialog(self, task: Task):
         delete_task_popup = type("DeleteTask", (BoxLayout,), {})()
@@ -105,7 +113,7 @@ class App(Kivy4):
     def delete_task(self, task: Task):
         self.delete_file(f"Tasks/{task.id}.json")
         self.dismiss()
-        item = self.find_row_by_task(task)
+        item = self.find_row_by_task(task.name)
         self.ids.container.remove_widget(item)
         self.tasks_dict[task.name].stop()
         self.tasks_dict.pop(task.name)
